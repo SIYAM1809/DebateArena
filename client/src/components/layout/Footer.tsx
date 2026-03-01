@@ -73,8 +73,8 @@ export default function Footer() {
                         >
                             <div
                                 style={{
-                                    width: '40px',
-                                    height: '40px',
+                                    width: '48px',
+                                    height: '48px',
                                     borderRadius: '12px',
                                     border: '1px solid var(--primary-glow)',
                                     background: 'var(--bg-surface)',
@@ -82,10 +82,11 @@ export default function Footer() {
                                     overflow: 'hidden',
                                     display: 'flex',
                                     justifyContent: 'center',
-                                    alignItems: 'center'
+                                    alignItems: 'center',
+                                    flexShrink: 0
                                 }}
                             >
-                                <Image src="/logo.png" alt="DebateArena Logo" width={40} height={40} style={{ objectFit: 'cover' }} />
+                                <Image src="/logo.png" alt="DebateArena Logo" width={64} height={64} style={{ objectFit: 'cover', transform: 'scale(1.6)' }} />
                             </div>
                             <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.5rem', letterSpacing: '-0.025em', color: '#fff' }}>
                                 DebateArena

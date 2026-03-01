@@ -80,16 +80,17 @@ export default function Navbar() {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            width: "32px",
-                            height: "32px",
-                            borderRadius: "8px",
+                            width: "38px",
+                            height: "38px",
+                            borderRadius: "10px",
                             overflow: "hidden",
                             background: "linear-gradient(135deg, var(--bg-surface), var(--bg-base))",
                             boxShadow: "0 0 16px var(--primary-glow)",
                             border: "1px solid var(--border)",
+                            flexShrink: 0,
                         }}
                     >
-                        <Image src="/logo.png" alt="DebateArena Logo" width={32} height={32} style={{ objectFit: 'cover' }} />
+                        <Image src="/logo.png" alt="DebateArena Logo" width={50} height={50} style={{ objectFit: 'cover', transform: 'scale(1.6)' }} />
                     </span>
                     Debate<span style={{ color: "var(--primary)" }}>Arena</span>
                 </Link>
