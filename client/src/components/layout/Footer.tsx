@@ -9,21 +9,20 @@ export default function Footer() {
 
             {/* Subtle background glow effect behind the footer */}
             <div
-                className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-2xl opacity-[0.03] pointer-events-none"
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] max-w-[1000px] opacity-[0.04] pointer-events-none"
                 style={{
-                    background: 'radial-gradient(ellipse at top, var(--primary) 0%, transparent 70%)'
+                    background: 'radial-gradient(ellipse 80% 80% at 50% -20%, var(--primary) 0%, transparent 100%)'
                 }}
             />
 
-            <div className="w-full max-w-7xl mx-auto px-6 py-20 relative z-10">
+            <div className="w-full max-w-7xl mx-auto px-8 pt-32 pb-24 relative z-10">
                 {/* 
-                    Main Footer Grid Layout
-                    5 columns total to balance the weight of the brand description vs links
+                    Main Footer Flexbox Layout (More robust than grid if utilities are missing)
                 */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-x-8 gap-y-16">
+                <div className="flex flex-col md:flex-row flex-wrap justify-between gap-x-8 gap-y-16">
 
-                    {/* Brand Section (Takes up 5 columns out of 12) */}
-                    <div className="md:col-span-5 flex flex-col items-start pr-12">
+                    {/* Brand Section (Takes up max 40% of space) */}
+                    <div className="flex flex-col items-start md:max-w-[40%] pr-4 md:pr-12">
                         <Link href="/" className="flex items-center gap-3 mb-8 transition-transform hover:scale-105" style={{ transformOrigin: 'left center' }}>
                             <div className="p-2.5 rounded-xl border shadow-lg" style={{ background: 'var(--primary-dim)', borderColor: 'var(--primary-glow)', boxShadow: '0 0 20px rgba(108, 99, 255, 0.15)' }}>
                                 <Swords className="w-6 h-6" style={{ color: 'var(--primary)' }} />
@@ -47,11 +46,8 @@ export default function Footer() {
                         </div>
                     </div>
 
-                    {/* Spacer column for visual breathing room */}
-                    <div className="hidden md:block md:col-span-1"></div>
-
-                    {/* Platform Links (Takes up 2 columns) */}
-                    <div className="md:col-span-2 flex flex-col">
+                    {/* Platform Links */}
+                    <div className="flex flex-col flex-1 min-w-[140px]">
                         <h4 className="font-bold text-white mb-8 uppercase tracking-wider text-xs flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--primary)' }}></span>
                             Platform
@@ -80,8 +76,8 @@ export default function Footer() {
                         </ul>
                     </div>
 
-                    {/* Legal Links (Takes up 2 columns) */}
-                    <div className="md:col-span-2 flex flex-col">
+                    {/* Legal Links */}
+                    <div className="flex flex-col flex-1 min-w-[140px]">
                         <h4 className="font-bold text-white mb-8 uppercase tracking-wider text-xs flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--text-muted)' }}></span>
                             Legal
@@ -100,8 +96,8 @@ export default function Footer() {
                         </ul>
                     </div>
 
-                    {/* Socials (Takes up last 2 columns) */}
-                    <div className="md:col-span-2 flex flex-col">
+                    {/* Socials */}
+                    <div className="flex flex-col flex-1 min-w-[140px]">
                         <h4 className="font-bold text-white mb-8 uppercase tracking-wider text-xs">
                             Connect
                         </h4>
