@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Github, Twitter, MessageSquare, Swords } from "lucide-react";
+import { Github, Twitter, MessageSquare } from "lucide-react";
+import Image from "next/image";
 
 export default function Footer() {
     const currentYear = new Date().getFullYear();
@@ -72,14 +73,19 @@ export default function Footer() {
                         >
                             <div
                                 style={{
-                                    padding: '10px',
+                                    width: '40px',
+                                    height: '40px',
                                     borderRadius: '12px',
                                     border: '1px solid var(--primary-glow)',
-                                    background: 'var(--primary-dim)',
-                                    boxShadow: '0 0 20px rgba(108, 99, 255, 0.15)'
+                                    background: 'var(--bg-surface)',
+                                    boxShadow: '0 0 20px rgba(108, 99, 255, 0.15)',
+                                    overflow: 'hidden',
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center'
                                 }}
                             >
-                                <Swords width={24} height={24} style={{ color: 'var(--primary)' }} />
+                                <Image src="/logo.png" alt="DebateArena Logo" width={40} height={40} style={{ objectFit: 'cover' }} />
                             </div>
                             <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.5rem', letterSpacing: '-0.025em', color: '#fff' }}>
                                 DebateArena

@@ -14,6 +14,7 @@ import { Swords, Trophy, User, LogOut, Menu, X, Zap, ShieldAlert } from "lucide-
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { disconnectSocket } from "@/lib/socket";
+import Image from "next/image";
 
 export default function Navbar() {
     const { user, clearAuth } = useAuthStore();
@@ -82,11 +83,13 @@ export default function Navbar() {
                             width: "32px",
                             height: "32px",
                             borderRadius: "8px",
-                            background: "linear-gradient(135deg, var(--primary), #a78bfa)",
+                            overflow: "hidden",
+                            background: "linear-gradient(135deg, var(--bg-surface), var(--bg-base))",
                             boxShadow: "0 0 16px var(--primary-glow)",
+                            border: "1px solid var(--border)",
                         }}
                     >
-                        <Swords size={16} color="white" />
+                        <Image src="/logo.png" alt="DebateArena Logo" width={32} height={32} style={{ objectFit: 'cover' }} />
                     </span>
                     Debate<span style={{ color: "var(--primary)" }}>Arena</span>
                 </Link>
