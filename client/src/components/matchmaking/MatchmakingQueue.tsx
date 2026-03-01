@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, Swords, X } from "lucide-react";
 import { getSocket } from "@/lib/socket";
 import { useAuthStore } from "@/store/authStore";
+import { api } from "@/lib/api";
 import Button from "@/components/ui/Button";
 
 export interface QueueState {
@@ -43,60 +44,82 @@ export default function MatchmakingQueue({ queueState, onCancel }: MatchmakingQu
             setAssignedSide(null);
         }, 0);
 
-        const accessToken = useAuthStore.getState().accessToken;
-        if (!accessToken) return; // Should never happen if user is on this page
+        const currentQueueState = queueState;
+        let isCancelled = false;
+        let activeSocket: ReturnType<typeof getSocket> | null = null;
+        let handleMatchFound: ((payload: { debateId: string; opponentId: string; side: "FOR" | "AGAINST" }) => void) | null = null;
+        let handleError: ((payload: { message: string }) => void) | null = null;
 
-        const socket = getSocket(accessToken);
-
-        // 1. Send join request to server
-        socket.emit("match:join", {
-            topicId: queueState.topicId,
-            side: queueState.side,
-        });
-
-        // 2. Listen for success
-        const handleMatchFound = (payload: { debateId: string; opponentId: string; side: "FOR" | "AGAINST" }) => {
-            setStatus("found");
-            setAssignedSide(payload.side);
-
-            // Play a sound (optional UX enhancement)
+        async function initQueue() {
             try {
-                const audio = new Audio('/match-found.mp3');
-                audio.volume = 0.5;
-                audio.play().catch(() => { }); // Catch browser auto-play blocks
+                // Ping the server to ensure our token is fresh. If the token is expired,
+                // the Axios interceptor will gracefully pause this request, hit /auth/refresh,
+                // update the Zustand store, and then resume. This guarantees the socket gets a fresh token.
+                await api.get("/auth/me");
             } catch {
-                // Ignore audio errors
+                // Session is completely dead
+                if (!isCancelled) onCancel();
+                return;
             }
 
-            // Wait 3 seconds to show the "Match Found!" screen, then redirect
-            setTimeout(() => {
-                setStatus("connecting");
-                router.push(`/debate/${payload.debateId}`);
-            }, 3000);
-        };
+            if (isCancelled) return;
 
-        // 3. Listen for errors
-        const handleError = (payload: { message: string }) => {
-            alert(`Matchmaking error: ${payload.message}`);
-            onCancel();
-        };
+            const accessToken = useAuthStore.getState().accessToken;
+            if (!accessToken) return;
 
-        socket.on("match:found", handleMatchFound);
-        socket.on("match:error", handleError);
+            const socket = getSocket(accessToken);
+            activeSocket = socket;
+
+            // 1. Send join request to server
+            socket.emit("match:join", {
+                topicId: currentQueueState.topicId,
+                side: currentQueueState.side,
+            });
+
+            // 2. Listen for success
+            handleMatchFound = (payload: { debateId: string; opponentId: string; side: "FOR" | "AGAINST" }) => {
+                setStatus("found");
+                setAssignedSide(payload.side);
+
+                try {
+                    const audio = new Audio('/match-found.mp3');
+                    audio.volume = 0.5;
+                    audio.play().catch(() => { });
+                } catch { }
+
+                setTimeout(() => {
+                    setStatus("connecting");
+                    router.push(`/debate/${payload.debateId}`);
+                }, 3000);
+            };
+
+            // 3. Listen for errors
+            handleError = (payload: { message: string }) => {
+                alert(`Matchmaking error: ${payload.message}`);
+                onCancel();
+            };
+
+            socket.on("match:found", handleMatchFound);
+            socket.on("match:error", handleError);
+        }
+
+        initQueue();
 
         // Cleanup: if component unmounts while searching, cancel match automatically
         return () => {
+            isCancelled = true;
             clearTimeout(timeoutId);
-            socket.off("match:found", handleMatchFound);
-            socket.off("match:error", handleError);
 
-            // If we unmount and we were still searching, tell server we left
-            // (Using a closure variable to check current state isn't perfectly reliable
-            // in useEffect cleanup, but the server handles disconnects/timeouts anyway)
-            socket.emit("match:cancel", {
-                topicId: queueState.topicId,
-                side: queueState.side,
-            });
+            if (activeSocket) {
+                if (handleMatchFound) activeSocket.off("match:found", handleMatchFound);
+                if (handleError) activeSocket.off("match:error", handleError);
+
+                // Tell server we left the queue
+                activeSocket.emit("match:cancel", {
+                    topicId: currentQueueState.topicId,
+                    side: currentQueueState.side,
+                });
+            }
         };
     }, [queueState, router, onCancel]);
 

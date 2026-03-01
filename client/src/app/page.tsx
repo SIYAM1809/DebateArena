@@ -272,7 +272,7 @@ export default function HomePage() {
             Ready to Test Your Argument Skills?
           </h2>
           <p style={{ color: "var(--text-secondary)", marginBottom: "32px", fontSize: "1.05rem" }}>
-            Join DebateArena today. It's free, real-time, and AI-powered.
+            Join DebateArena today. It&apos;s free, real-time, and AI-powered.
           </p>
           <Link href={user ? "/topics" : "/register"} style={{
             padding: "16px 40px", borderRadius: "var(--radius-sm)",

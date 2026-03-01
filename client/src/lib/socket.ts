@@ -19,19 +19,33 @@ let socket: Socket | null = null;
  * Returns the existing socket connection, or creates a new one with the
  * provided access token. The token is sent at handshake time for server-side
  * JWT validation (see server/src/socket.ts).
+ *
+ * If a socket already exists but is NOT connected (e.g. after a failed auth
+ * or a transient disconnect), we update its auth token and re-connect —
+ * this handles the "stale token on reconnect" race condition.
  */
 export function getSocket(accessToken: string): Socket {
+    // ── Case 1: active connection with same token → reuse ──────────────────
     if (socket?.connected) {
-        return socket; // Already connected — reuse it
+        return socket;
     }
 
-    // Create a new connection with JWT auth
+    // ── Case 2: socket exists but disconnected → update token & reconnect ──
+    if (socket) {
+        // Patch the auth token so the next connect handshake uses the fresh one
+        socket.auth = { token: accessToken };
+        socket.connect();
+        return socket;
+    }
+
+    // ── Case 3: no socket yet → create one ─────────────────────────────────
     socket = io(SOCKET_URL, {
         auth: { token: accessToken },
         transports: ["websocket", "polling"],
         reconnectionAttempts: 5,      // Try to reconnect 5 times before giving up
         reconnectionDelay: 1000,      // Wait 1s between reconnect attempts
         timeout: 10000,               // 10s to establish connection
+        autoConnect: true,
     });
 
     socket.on("connect", () => {
@@ -43,7 +57,15 @@ export function getSocket(accessToken: string): Socket {
     });
 
     socket.on("connect_error", (err) => {
-        console.error("[Socket] Connection error:", err.message);
+        // "Invalid or expired token" means the access token has expired.
+        // Silently attempt to reconnect after a short delay — the Axios
+        // interceptor will refresh the token automatically on the next
+        // API request, so the next socket emit will carry a fresh token.
+        if (err.message?.includes("expired") || err.message?.includes("Invalid")) {
+            console.warn("[Socket] Auth error — token may have expired. Will retry on next interaction.");
+        } else {
+            console.error("[Socket] Connection error:", err.message);
+        }
     });
 
     return socket;
@@ -52,6 +74,20 @@ export function getSocket(accessToken: string): Socket {
 /** Returns the existing socket instance without creating a new one. */
 export function getExistingSocket(): Socket | null {
     return socket;
+}
+
+/**
+ * Updates the auth token on an existing socket without disconnecting.
+ * Call this whenever a new access token is obtained (e.g. after silent refresh).
+ */
+export function updateSocketToken(accessToken: string): void {
+    if (socket) {
+        socket.auth = { token: accessToken };
+        // If disconnected, reconnect with the new token
+        if (!socket.connected) {
+            socket.connect();
+        }
+    }
 }
 
 /** Disconnect and clear the singleton — call on logout. */

@@ -12,7 +12,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
-import { disconnectSocket, getSocket } from "@/lib/socket";
+import { disconnectSocket, getSocket, updateSocketToken } from "@/lib/socket";
 import { useAuthStore } from "@/store/authStore";
 import type { User } from "@/types/user";
 
@@ -55,6 +55,8 @@ export function useAuth(): AuthHookResult {
 
                 const { data: userData } = await api.get<{ user: User }>("/auth/me");
                 setAuth(userData.user, data.accessToken);
+                // Update the socket's auth token so it reconnects with a fresh one
+                updateSocketToken(data.accessToken);
             } catch {
                 // No valid session — user is logged out. This is normal (first visit).
                 clearAuth();
@@ -77,6 +79,7 @@ export function useAuth(): AuthHookResult {
                 { email, password }
             );
             setAuth(data.user, data.accessToken);
+            updateSocketToken(data.accessToken); // Keep socket in sync with fresh token
             router.push("/topics"); // Redirect after login
         } finally {
             setIsLoading(false);
@@ -98,6 +101,7 @@ export function useAuth(): AuthHookResult {
                 { username, email, password, confirmPassword: password }
             );
             setAuth(data.user, data.accessToken);
+            updateSocketToken(data.accessToken); // Keep socket in sync with fresh token
             router.push("/topics"); // Same redirect as login
         } finally {
             setIsLoading(false);
