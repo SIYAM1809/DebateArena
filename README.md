@@ -55,3 +55,44 @@ debatearena/
 
 ## Cost: $0
 All services used (MongoDB Atlas M0, Upstash Redis, Hugging Face, Cloudinary, Vercel, Railway) have permanently free tiers.
+
+## Running Tests
+```bash
+cd server
+npm test          # run all tests once
+npm run test:coverage   # run with coverage report
+```
+
+## Deployment
+
+### Backend → Railway
+
+1. Create a new Railway project and connect your GitHub repo.
+2. Set **Root Directory** to `server/`.
+3. Railway will auto-detect `nixpacks.toml` and run `npm install && npm run build`, then `node dist/index.js`.
+4. Add the following environment variables in the Railway dashboard:
+
+| Variable | Description |
+|----------|-------------|
+| `PORT` | Set to `8080` (Railway exposes this automatically) |
+| `NODE_ENV` | `production` |
+| `MONGO_URI` | MongoDB Atlas connection string |
+| `REDIS_URL` | Upstash Redis REST URL |
+| `JWT_ACCESS_SECRET` | Random 64-char secret |
+| `JWT_REFRESH_SECRET` | Random 64-char secret (different from access) |
+| `CLIENT_URL` | Your Vercel frontend URL (e.g. `https://debatearena.vercel.app`) |
+| `HUGGINGFACE_API_KEY` | Hugging Face API key for AI scoring |
+
+---
+
+### Frontend → Vercel
+
+1. Create a new Vercel project and connect your GitHub repo.
+2. Set **Root Directory** to `client/`.
+3. Vercel auto-detects Next.js and uses `npm run build`.
+4. Add the following environment variables in the Vercel dashboard:
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_API_URL` | Railway backend URL + `/api/v1` (e.g. `https://your-app.up.railway.app/api/v1`) |
+| `NEXT_PUBLIC_SOCKET_URL` | Railway backend root URL (e.g. `https://your-app.up.railway.app`) |

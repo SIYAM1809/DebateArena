@@ -1,0 +1,16 @@
+{
+    "framework": "nextjs",
+    "buildCommand": "npm run build",
+    "outputDirectory": ".next",
+    "installCommand": "npm install",
+    "env": {
+        "NEXT_PUBLIC_API_URL": {
+            "description": "Full URL of the Railway backend (e.g. https://your-app.up.railway.app/api/v1)",
+            "required": true
+        },
+        "NEXT_PUBLIC_SOCKET_URL": {
+            "description": "Root URL of the Railway backend for Socket.io (e.g. https://your-app.up.railway.app)",
+            "required": true
+        }
+    }
+}
