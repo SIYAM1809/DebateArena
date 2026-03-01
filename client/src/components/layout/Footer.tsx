@@ -15,7 +15,7 @@ export default function Footer() {
                 }}
             />
 
-            <div className="container mx-auto px-6 py-20 relative z-10">
+            <div className="w-full max-w-7xl mx-auto px-6 py-20 relative z-10">
                 {/* 
                     Main Footer Grid Layout
                     5 columns total to balance the weight of the brand description vs links
