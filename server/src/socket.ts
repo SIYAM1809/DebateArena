@@ -49,6 +49,11 @@ export function initSocket(httpServer: HttpServer): SocketServer {
                 username: string;
             };
             // Attach user info to socket object for use in event handlers
+            socket.data = socket.data || {};
+            socket.data.user = {
+                userId: decoded.userId,
+                username: decoded.username
+            };
             socket.userId = decoded.userId;
             socket.username = decoded.username;
             next(); // Allow the connection
