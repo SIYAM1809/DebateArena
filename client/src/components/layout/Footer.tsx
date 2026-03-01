@@ -5,120 +5,167 @@ export default function Footer() {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="mt-24 border-t relative overflow-hidden" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-surface)' }}>
-
+        <footer
+            style={{
+                marginTop: '96px',
+                borderTop: '1px solid var(--border)',
+                backgroundColor: 'var(--bg-base)',
+                position: 'relative',
+                overflow: 'hidden'
+            }}
+        >
             {/* Subtle background glow effect behind the footer */}
             <div
-                className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] max-w-[1000px] opacity-[0.04] pointer-events-none"
                 style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: '100%',
+                    height: '500px',
+                    maxWidth: '1000px',
+                    opacity: 0.04,
+                    pointerEvents: 'none',
                     background: 'radial-gradient(ellipse 80% 80% at 50% -20%, var(--primary) 0%, transparent 100%)'
                 }}
             />
 
-            <div className="w-full max-w-7xl mx-auto px-8 pt-32 pb-24 relative z-10">
-                {/* 
-                    Main Footer Flexbox Layout (More robust than grid if utilities are missing)
-                */}
-                <div className="flex flex-col md:flex-row flex-wrap justify-between gap-x-8 gap-y-16">
-
-                    {/* Brand Section (Takes up max 40% of space) */}
-                    <div className="flex flex-col items-start md:max-w-[40%] pr-4 md:pr-12">
-                        <Link href="/" className="flex items-center gap-3 mb-8 transition-transform hover:scale-105" style={{ transformOrigin: 'left center' }}>
-                            <div className="p-2.5 rounded-xl border shadow-lg" style={{ background: 'var(--primary-dim)', borderColor: 'var(--primary-glow)', boxShadow: '0 0 20px rgba(108, 99, 255, 0.15)' }}>
-                                <Swords className="w-6 h-6" style={{ color: 'var(--primary)' }} />
+            <div
+                style={{
+                    width: '100%',
+                    maxWidth: '1280px',
+                    margin: '0 auto',
+                    padding: '100px 32px 64px 32px',
+                    position: 'relative',
+                    zIndex: 10,
+                }}
+            >
+                {/* Main Footer Flexbox Layout */}
+                <div
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        flexWrap: 'wrap',
+                        justifyContent: 'space-between',
+                        gap: '64px 32px'
+                    }}
+                >
+                    {/* Brand Section */}
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'flex-start',
+                            flex: '1 1 400px',
+                            maxWidth: '100%'
+                        }}
+                    >
+                        <Link
+                            href="/"
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px',
+                                marginBottom: '32px',
+                                textDecoration: 'none'
+                            }}
+                        >
+                            <div
+                                style={{
+                                    padding: '10px',
+                                    borderRadius: '12px',
+                                    border: '1px solid var(--primary-glow)',
+                                    background: 'var(--primary-dim)',
+                                    boxShadow: '0 0 20px rgba(108, 99, 255, 0.15)'
+                                }}
+                            >
+                                <Swords width={24} height={24} style={{ color: 'var(--primary)' }} />
                             </div>
-                            <span className="font-display font-extrabold text-2xl tracking-tight text-white">
+                            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.5rem', letterSpacing: '-0.025em', color: '#fff' }}>
                                 DebateArena
                             </span>
                         </Link>
 
-                        <p className="text-[1.05rem] leading-relaxed mb-10 max-w-[400px]" style={{ color: 'var(--text-secondary)' }}>
+                        <p style={{ fontSize: '1.05rem', lineHeight: 1.6, marginBottom: '40px', maxWidth: '400px', color: 'var(--text-secondary)' }}>
                             The premier platform for structured, real-time debates.
                             Hone your argumentation skills against global opponents
                             with instant, unbiased judging by AI.
                         </p>
 
                         {/* Copyright */}
-                        <div className="mt-auto flex items-center gap-4 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-muted)', marginTop: 'auto' }}>
                             <span>&copy; {currentYear} DebateArena.</span>
-                            <span className="w-1 h-1 rounded-full bg-slate-700"></span>
+                            <span style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#334155' }}></span>
                             <span>All rights reserved.</span>
                         </div>
                     </div>
 
-                    {/* Platform Links */}
-                    <div className="flex flex-col flex-1 min-w-[140px]">
-                        <h4 className="font-bold text-white mb-8 uppercase tracking-wider text-xs flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--primary)' }}></span>
-                            Platform
-                        </h4>
-                        <ul className="space-y-5 font-medium text-[0.95rem]">
-                            <li>
-                                <Link href="/" className="transition-all hover:translate-x-1 inline-block hover:text-white" style={{ color: 'var(--text-secondary)' }}>
-                                    Home
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/topics" className="transition-all hover:translate-x-1 inline-block hover:text-white" style={{ color: 'var(--text-secondary)' }}>
-                                    Browse Topics
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/leaderboard" className="transition-all hover:translate-x-1 inline-block hover:text-white" style={{ color: 'var(--text-secondary)' }}>
-                                    Leaderboard
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/archive" className="transition-all hover:translate-x-1 inline-block hover:text-white" style={{ color: 'var(--text-secondary)' }}>
-                                    Debate Archive
-                                </Link>
-                            </li>
-                        </ul>
-                    </div>
+                    {/* Links Container Block to ensure they stay together on medium screens */}
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            flexWrap: 'wrap',
+                            gap: '32px 64px',
+                            flex: '1 1 400px'
+                        }}
+                    >
+                        {/* Platform Links */}
+                        <div style={{ display: 'flex', flexDirection: 'column', flex: '1 1 140px' }}>
+                            <h4 style={{ fontWeight: 700, color: '#fff', marginBottom: '24px', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--primary)' }}></span>
+                                Platform
+                            </h4>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', fontWeight: 500, fontSize: '0.95rem' }}>
+                                <Link href="/" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Home</Link>
+                                <Link href="/topics" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Browse Topics</Link>
+                                <Link href="/leaderboard" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Leaderboard</Link>
+                                <Link href="/archive" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Debate Archive</Link>
+                            </div>
+                        </div>
 
-                    {/* Legal Links */}
-                    <div className="flex flex-col flex-1 min-w-[140px]">
-                        <h4 className="font-bold text-white mb-8 uppercase tracking-wider text-xs flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--text-muted)' }}></span>
-                            Legal
-                        </h4>
-                        <ul className="space-y-5 font-medium text-[0.95rem]">
-                            <li>
-                                <Link href="#" className="transition-colors hover:text-white" style={{ color: 'var(--text-secondary)' }}>
-                                    Privacy Policy
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="#" className="transition-colors hover:text-white" style={{ color: 'var(--text-secondary)' }}>
-                                    Terms of Service
-                                </Link>
-                            </li>
-                        </ul>
-                    </div>
+                        {/* Legal Links */}
+                        <div style={{ display: 'flex', flexDirection: 'column', flex: '1 1 140px' }}>
+                            <h4 style={{ fontWeight: 700, color: '#fff', marginBottom: '24px', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--text-muted)' }}></span>
+                                Legal
+                            </h4>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', fontWeight: 500, fontSize: '0.95rem' }}>
+                                <Link href="#" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Privacy Policy</Link>
+                                <Link href="#" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Terms of Service</Link>
+                            </div>
+                        </div>
 
-                    {/* Socials */}
-                    <div className="flex flex-col flex-1 min-w-[140px]">
-                        <h4 className="font-bold text-white mb-8 uppercase tracking-wider text-xs">
-                            Connect
-                        </h4>
-                        <div className="flex gap-4">
-                            <a href="#" className="p-3 rounded-xl transition-all hover:-translate-y-1 hover:bg-white/10" style={{ backgroundColor: 'var(--bg-overlay)', color: 'var(--text-primary)' }}>
-                                <Twitter className="w-[1.125rem] h-[1.125rem]" />
-                                <span className="sr-only">Twitter</span>
-                            </a>
-                            <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="p-3 rounded-xl transition-all hover:-translate-y-1 hover:bg-white/10" style={{ backgroundColor: 'var(--bg-overlay)', color: 'var(--text-primary)' }}>
-                                <Github className="w-[1.125rem] h-[1.125rem]" />
-                                <span className="sr-only">GitHub</span>
-                            </a>
-                            <a href="#" className="p-3 rounded-xl transition-all hover:-translate-y-1 hover:bg-white/10" style={{ backgroundColor: 'var(--bg-overlay)', color: 'var(--text-primary)' }}>
-                                <MessageSquare className="w-[1.125rem] h-[1.125rem]" />
-                                <span className="sr-only">Discord</span>
-                            </a>
+                        {/* Socials */}
+                        <div style={{ display: 'flex', flexDirection: 'column', flex: '1 1 140px' }}>
+                            <h4 style={{ fontWeight: 700, color: '#fff', marginBottom: '24px', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.75rem' }}>
+                                Connect
+                            </h4>
+                            <div style={{ display: 'flex', gap: '16px' }}>
+                                <a href="#" style={{ padding: '12px', borderRadius: '12px', backgroundColor: 'var(--bg-overlay)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
+                                    <Twitter width={18} height={18} />
+                                    <span className="sr-only">Twitter</span>
+                                </a>
+                                <a href="https://github.com" target="_blank" rel="noopener noreferrer" style={{ padding: '12px', borderRadius: '12px', backgroundColor: 'var(--bg-overlay)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
+                                    <Github width={18} height={18} />
+                                    <span className="sr-only">GitHub</span>
+                                </a>
+                                <a href="#" style={{ padding: '12px', borderRadius: '12px', backgroundColor: 'var(--bg-overlay)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
+                                    <MessageSquare width={18} height={18} />
+                                    <span className="sr-only">Discord</span>
+                                </a>
+                            </div>
                         </div>
                     </div>
 
                 </div>
             </div>
+            {/* Global hover overrides for links that we rendered using strict inline styles */}
+            <style>{`
+            footer a { transition: all 0.2s ease; }
+            footer a:hover { color: #fff !important; }
+            footer .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+            `}</style>
         </footer>
     );
 }
