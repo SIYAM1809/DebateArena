@@ -3,9 +3,13 @@
 // Topic Card Component
 // Displays a single debate topic on the topics grid.
 // Shows the category badge, title, description, popularity, and join buttons.
+// Now includes a "Solo Practice" button that starts an instant bot debate.
 
-import { Users, Flame } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Users, Flame, Bot } from "lucide-react";
 import { Topic } from "@/lib/constants";
+import { api } from "@/lib/api";
 import Button from "@/components/ui/Button";
 
 interface TopicCardProps {
@@ -20,7 +24,24 @@ export default function TopicCard({
     onJoinQueue,
     isQueueingFor,
 }: TopicCardProps) {
+    const router = useRouter();
     const isJoining = isQueueingFor === topic._id;
+    const [isStartingSolo, setIsStartingSolo] = useState(false);
+
+    const handleSoloPractice = async () => {
+        if (isStartingSolo) return;
+        setIsStartingSolo(true);
+        try {
+            const res = await api.post<{ debateId: string; isSolo: true }>(
+                "/debates/solo/start",
+                { topicId: topic._id }
+            );
+            router.push(`/solo/${res.data.debateId}`);
+        } catch {
+            // If the API fails (e.g. not logged in), the api interceptor will handle it
+            setIsStartingSolo(false);
+        }
+    };
 
     return (
         <div
@@ -121,20 +142,20 @@ export default function TopicCard({
                     {topic.debateCount.toLocaleString()} matches played
                 </div>
 
-                {/* Join Queue Actions */}
+                {/* Live Debate Actions */}
                 <div style={{ display: "flex", gap: "8px" }}>
                     <Button
                         size="sm"
                         style={{ flex: 1, background: "rgba(34, 197, 94, 0.1)", color: "var(--success)", border: "1px solid rgba(34, 197, 94, 0.2)" }}
                         onClick={() => onJoinQueue(topic._id, "FOR")}
-                        disabled={isJoining}
+                        disabled={isJoining || isStartingSolo}
                         onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
-                            if (isJoining) return;
+                            if (isJoining || isStartingSolo) return;
                             (e.currentTarget as HTMLElement).style.background = "var(--success)";
                             (e.currentTarget as HTMLElement).style.color = "white";
                         }}
                         onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
-                            if (isJoining) return;
+                            if (isJoining || isStartingSolo) return;
                             (e.currentTarget as HTMLElement).style.background = "rgba(34, 197, 94, 0.1)";
                             (e.currentTarget as HTMLElement).style.color = "var(--success)";
                         }}
@@ -146,14 +167,14 @@ export default function TopicCard({
                         size="sm"
                         style={{ flex: 1, background: "rgba(249, 115, 22, 0.1)", color: "var(--warning)", border: "1px solid rgba(249, 115, 22, 0.2)" }}
                         onClick={() => onJoinQueue(topic._id, "AGAINST")}
-                        disabled={isJoining}
+                        disabled={isJoining || isStartingSolo}
                         onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
-                            if (isJoining) return;
+                            if (isJoining || isStartingSolo) return;
                             (e.currentTarget as HTMLElement).style.background = "var(--warning)";
                             (e.currentTarget as HTMLElement).style.color = "white";
                         }}
                         onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
-                            if (isJoining) return;
+                            if (isJoining || isStartingSolo) return;
                             (e.currentTarget as HTMLElement).style.background = "rgba(249, 115, 22, 0.1)";
                             (e.currentTarget as HTMLElement).style.color = "var(--warning)";
                         }}
@@ -169,8 +190,49 @@ export default function TopicCard({
                     style={{ marginTop: "8px" }}
                     onClick={() => onJoinQueue(topic._id, "RANDOM")}
                     isLoading={isJoining}
+                    disabled={isStartingSolo}
                 >
                     {isJoining ? "Joining..." : "Random Side (Faster)"}
+                </Button>
+
+                {/* ── SOLO PRACTICE BUTTON ── */}
+                {/* Separator */}
+                <div style={{
+                    borderTop: "1px solid var(--border)",
+                    margin: "12px 0",
+                    opacity: 0.5
+                }} />
+
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    fullWidth
+                    onClick={handleSoloPractice}
+                    isLoading={isStartingSolo}
+                    disabled={isJoining}
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "6px",
+                        border: "1px solid rgba(139, 92, 246, 0.3)",
+                        background: "rgba(139, 92, 246, 0.06)",
+                        color: "var(--primary)",
+                        transition: "all 0.2s ease",
+                    }}
+                    onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                        if (isStartingSolo || isJoining) return;
+                        (e.currentTarget as HTMLElement).style.background = "rgba(139, 92, 246, 0.15)";
+                        (e.currentTarget as HTMLElement).style.borderColor = "var(--primary)";
+                    }}
+                    onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                        if (isStartingSolo || isJoining) return;
+                        (e.currentTarget as HTMLElement).style.background = "rgba(139, 92, 246, 0.06)";
+                        (e.currentTarget as HTMLElement).style.borderColor = "rgba(139, 92, 246, 0.3)";
+                    }}
+                >
+                    <Bot size={14} />
+                    {isStartingSolo ? "Starting..." : "Solo Practice vs AI Bot"}
                 </Button>
             </div>
         </div>

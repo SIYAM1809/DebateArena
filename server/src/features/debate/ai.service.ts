@@ -2,7 +2,10 @@ import { config } from "../../config/env";
 import { logger } from "../../utils/logger";
 
 // Using a fast, free sentiment analysis model from Hugging Face
-const HUGGING_FACE_API_URL = "https://api-inference.huggingface.co/models/distilbert-base-uncased-finetuned-sst-2-english";
+// NOTE: The old api-inference.huggingface.co domain was shut down (HTTP 410).
+// New endpoint uses router.huggingface.co with the hf-inference provider.
+// Model ID must include the org namespace (distilbert/...) for the new router.
+const HUGGING_FACE_API_URL = "https://router.huggingface.co/hf-inference/models/distilbert/distilbert-base-uncased-finetuned-sst-2-english";
 
 interface HFResponse {
     label: string; // e.g., "POSITIVE" or "NEGATIVE"
@@ -25,7 +28,8 @@ export async function evaluateArgument(content: string): Promise<number | null> 
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${config.huggingFaceToken}`,
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "x-wait-for-model": "true",  // Wait for model to load instead of 503 on cold start
             },
             body: JSON.stringify({ inputs: content })
         });

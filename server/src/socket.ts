@@ -12,6 +12,7 @@ import { config } from "./config/env";
 import { logger } from "./utils/logger";
 import { registerMatchmakingHandlers } from "./features/matchmaking/matchmaking.socket";
 import { registerDebateHandlers } from "./features/debate/debate.socket";
+import { registerSoloHandlers } from "./features/debate/solo.socket";
 
 export interface AuthenticatedSocket extends Socket {
     userId?: string;
@@ -80,6 +81,7 @@ export function initSocket(httpServer: HttpServer): SocketServer {
         // Register feature-specific socket event handlers
         registerMatchmakingHandlers(io, socket);
         registerDebateHandlers(io, socket);
+        registerSoloHandlers(io, socket);
 
         socket.on("disconnect", (reason) => {
             logger.info("Socket disconnected", {

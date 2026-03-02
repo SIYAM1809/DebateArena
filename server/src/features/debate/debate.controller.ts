@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import * as debateService from "./debate.service";
+import * as soloService from "./solo.service";
 import { AppError } from "../../utils/errors";
 
 export async function getDebate(req: Request, res: Response, next: NextFunction) {
@@ -43,6 +44,21 @@ export async function flagMessage(req: Request, res: Response, next: NextFunctio
         const { id, messageId } = req.params;
         const result = await debateService.flagMessage(id as string, messageId as string);
         res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export async function startSoloDebate(req: Request, res: Response, next: NextFunction) {
+    try {
+        const userId = req.user?.userId;
+        if (!userId) throw new AppError("Unauthorized", 401);
+
+        const { topicId } = req.body as { topicId?: string };
+        if (!topicId) throw new AppError("topicId is required", 400);
+
+        const debate = await soloService.startSoloSession(userId, topicId);
+        res.status(201).json({ debateId: debate._id, isSolo: true });
     } catch (error) {
         next(error);
     }

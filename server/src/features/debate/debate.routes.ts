@@ -14,6 +14,10 @@ router.get("/stats", debateController.getDebateStats);
 // GET /api/v1/debates/:id — full debate with messages (requires auth)
 router.get("/:id", authenticate, debateController.getDebate);
 
+// POST /api/v1/debates/solo/start — start a solo practice session instantly (requires auth)
+// IMPORTANT: must be defined BEFORE "/:id" or Express will treat "solo" as an id param
+router.post("/solo/start", authenticate, debateController.startSoloDebate);
+
 // PATCH /api/v1/debates/:id/messages/:messageId/flag — flag a message (requires auth)
 router.patch("/:id/messages/:messageId/flag", authenticate, debateController.flagMessage);
 

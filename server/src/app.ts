@@ -41,7 +41,7 @@ app.use(
 
 const globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100,
+    max: config.nodeEnv === "production" ? 100 : 500, // Relaxed in development
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -51,6 +51,7 @@ const globalLimiter = rateLimit({
 app.use("/api", globalLimiter);
 
 // Stricter limiter for auth endpoints — prevents brute-force login / registrations
+// Only applied in production — in development we skip it to avoid lockouts during testing
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 20,                   // 20 attempts per IP per window
@@ -59,6 +60,7 @@ const authLimiter = rateLimit({
     message: {
         error: "Too many requests on auth endpoints, please try again later.",
     },
+    skip: () => config.nodeEnv !== "production", // ← bypass in development
 });
 
 import mongoose from "mongoose";

@@ -6,7 +6,7 @@
 
 import Link from "next/link";
 import { useAuthStore } from "@/store/authStore";
-import { Swords, Trophy, Brain, Zap, Users, Star } from "lucide-react";
+import { Swords, Trophy, Brain, Zap, Users, Star, Bot } from "lucide-react";
 
 // ── FEATURE CARDS ────────────────────────────────────────────────────────────
 
@@ -52,6 +52,13 @@ const features = [
     desc: "Your win rate and average AI score build your public profile. Stand out from the crowd.",
     color: "#a78bfa",
     bg: "rgba(167,139,250,0.12)",
+  },
+  {
+    icon: Bot,
+    title: "Solo Practice Mode",
+    desc: "No opponent? No problem. Debate our AI bot instantly — get real AI scores and try the full experience in 3 minutes.",
+    color: "#f472b6",
+    bg: "rgba(244,114,182,0.12)",
   },
 ];
 
@@ -174,6 +181,15 @@ export default function HomePage() {
             textDecoration: "none", display: "flex", alignItems: "center", gap: "8px",
           }}>
             <Trophy size={16} /> Leaderboard
+          </Link>
+          <Link href="/topics" style={{
+            padding: "14px 24px", borderRadius: "var(--radius-sm)",
+            border: "1px solid rgba(139,92,246,0.4)",
+            background: "rgba(139,92,246,0.08)",
+            color: "var(--primary)", fontWeight: 600, fontSize: "1rem",
+            textDecoration: "none", display: "flex", alignItems: "center", gap: "8px",
+          }}>
+            <Bot size={16} /> Try Solo Practice
           </Link>
         </div>
 
