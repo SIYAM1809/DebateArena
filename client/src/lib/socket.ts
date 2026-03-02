@@ -41,10 +41,16 @@ export function getSocket(accessToken: string): Socket {
     // ── Case 3: no socket yet → create one ─────────────────────────────────
     socket = io(SOCKET_URL, {
         auth: { token: accessToken },
-        transports: ["websocket", "polling"],
-        reconnectionAttempts: 5,      // Try to reconnect 5 times before giving up
-        reconnectionDelay: 1000,      // Wait 1s between reconnect attempts
-        timeout: 10000,               // 10s to establish connection
+        // TEACHING NOTE — Why polling first?
+        // Socket.IO tries transports in order. Starting with "websocket" makes it
+        // fire a raw WS probe that fails loudly if there's any network hiccup or
+        // CORS pre-flight issue. Starting with "polling" lets the HTTP handshake
+        // complete first (more reliable), then silently upgrades to WebSocket.
+        // This is Socket.IO's own recommended pattern for production.
+        transports: ["polling", "websocket"],
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        timeout: 10000,
         autoConnect: true,
     });
 
@@ -57,12 +63,13 @@ export function getSocket(accessToken: string): Socket {
     });
 
     socket.on("connect_error", (err) => {
-        // "Invalid or expired token" means the access token has expired.
-        // Silently attempt to reconnect after a short delay — the Axios
-        // interceptor will refresh the token automatically on the next
-        // API request, so the next socket emit will carry a fresh token.
+        // "websocket error" is a low-level Socket.IO transport probe failure —
+        // the library handles it automatically (falls back to polling) so we
+        // don't need to log it as an error. Only surface genuinely unexpected errors.
         if (err.message?.includes("expired") || err.message?.includes("Invalid")) {
             console.warn("[Socket] Auth error — token may have expired. Will retry on next interaction.");
+        } else if (err.message === "websocket error") {
+            // Transient WS probe — ignore, Socket.IO retries automatically
         } else {
             console.error("[Socket] Connection error:", err.message);
         }

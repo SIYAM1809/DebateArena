@@ -52,4 +52,5 @@ export const config = {
         appPassword: process.env.EMAIL_APP_PASSWORD || "",
     },
     huggingFaceToken: process.env.HUGGING_FACE_TOKEN || "",
+    geminiApiKey: process.env.GEMINI_API_KEY || "",
 };
