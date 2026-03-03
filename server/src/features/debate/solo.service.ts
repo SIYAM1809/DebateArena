@@ -13,7 +13,7 @@
 
 import { v4 as uuidv4 } from "uuid";
 import mongoose from "mongoose";
-import { Debate, DebateStatus, IDebate } from "../../models/Debate";
+import { Debate, DebateStatus, IDebate, AiSource } from "../../models/Debate";
 import Topic from "../../models/Topic";
 import { NotFoundError } from "../../utils/errors";
 import { evaluateArgument, generateBotReply } from "./ai.service";
@@ -80,63 +80,58 @@ export async function startSoloSession(
  *   A hiring manager looking at the transcript sees scores on every message —
  *   this makes the feature feel complete and production-grade, not faked.
  */
-export async function submitBotTurn(debateId: string): Promise<IDebate> {
-    // ── Step 1: Fetch the debate document ──
+export async function submitBotTurn(
+    debateId: string,
+    preferredModel: "gemini" | "canned" = "gemini"
+): Promise<IDebate> {
     const debate = await Debate.findById(debateId);
     if (!debate) throw new NotFoundError("Debate not found");
 
-    // Safety guard: only proceed if it's the bot's turn
     if (debate.currentTurn !== "AGAINST" || debate.status !== DebateStatus.ONGOING) {
         return debate;
     }
 
-    // ── Step 2: Fetch topic title + category ──
     const topic = await Topic.findById(debate.topicId).lean<{ title: string; category: string }>();
     const topicTitle = topic?.title ?? "the debate topic";
     const category = topic?.category ?? "Technology";
 
-    // ── Step 3: Build conversation context from recent messages ──
-    // We pass the last 4 messages to Gemini so it can reply to what the user
-    // specifically said, not just give a generic argument about the topic.
     const recentMessages = debate.messages.slice(-4);
     const conversationContext = recentMessages
-        .map(m => {
-            const role = m.side === "FOR" ? "User" : "Bot";
-            return `${role}: ${m.content}`;
-        })
+        .map(m => { const role = m.side === "FOR" ? "User" : "Bot"; return `${role}: ${m.content}`; })
         .join("\n");
+    const userLastMessage = recentMessages.filter(m => m.side === "FOR").at(-1)?.content ?? "";
 
-    const userLastMessage = recentMessages
-        .filter(m => m.side === "FOR")
-        .at(-1)?.content ?? "";
-
-    // ── Step 4: Generate the bot reply ──
-    // Try Gemini first; fall back to canned dataset if unavailable
+    // ── Generate reply, respecting the user's preferred model ──
     let argument: string;
-    const geminiReply = await generateBotReply(topicTitle, userLastMessage, conversationContext);
+    let aiSource: AiSource = "canned";
 
-    if (geminiReply) {
-        argument = geminiReply;
+    if (preferredModel === "gemini") {
+        // Try Gemini; fall through to canned on any failure
+        const geminiReply = await generateBotReply(topicTitle, userLastMessage, conversationContext);
+        if (geminiReply) {
+            argument = geminiReply;
+            aiSource = "gemini";
+        } else {
+            argument = pickBotArgument(category, "AGAINST");
+            aiSource = "canned"; // Gemini unavailable or key not set — fell back
+        }
     } else {
-        // Graceful fallback — no Gemini key or rate-limited? Use curated canned arguments.
         argument = pickBotArgument(category, "AGAINST");
+        aiSource = "canned";
     }
 
-    // ── Step 5: Score the bot's argument with Gemini ──
-    const aiScore = await evaluateArgument(argument);
+    const scoreValue = await evaluateArgument(argument);
 
-    // ── Step 6: Save bot message ──
     debate.messages.push({
         sender: BOT_USER_ID as unknown as mongoose.Types.ObjectId,
         side: "AGAINST",
         content: argument,
         createdAt: new Date(),
-        aiScore: aiScore ?? undefined,
+        aiScore: scoreValue ?? undefined,
+        aiSource,          // ← stored so UI can display which AI replied
     });
 
     await debate.save();
-
-    // ── Step 7: Advance turn ──
-    const updatedDebate = await endTurn(debateId);
-    return updatedDebate;
+    return await endTurn(debateId);
 }
+

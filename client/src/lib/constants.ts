@@ -61,7 +61,10 @@ export interface IMessage {
     createdAt: string;
     flagged?: boolean;
     aiScore?: number;
+    /** Which AI generated this bot message — "gemini" | "canned" | undefined (human messages) */
+    aiSource?: "gemini" | "canned";
 }
+
 
 export interface IDebate {
     _id: string;

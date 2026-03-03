@@ -8,6 +8,8 @@ export enum DebateStatus {
     FORFEITED = "FORFEITED" // Someone disconnected/abandoned
 }
 
+export type AiSource = "gemini" | "canned";
+
 export interface IMessage {
     _id?: Types.ObjectId;
     sender: Types.ObjectId;
@@ -16,6 +18,8 @@ export interface IMessage {
     createdAt: Date;
     flagged?: boolean;
     aiScore?: number;
+    /** Which AI generated this message (only set on bot messages in solo mode) */
+    aiSource?: AiSource;
 }
 
 export interface IDebate extends Document<string> {
@@ -41,7 +45,8 @@ const MessageSchema = new Schema<IMessage>({
     content: { type: String, required: true },
     createdAt: { type: Date, default: Date.now },
     flagged: { type: Boolean, default: false },
-    aiScore: { type: Number }
+    aiScore: { type: Number },
+    aiSource: { type: String, enum: ["gemini", "canned"], default: undefined },
 });
 
 const DebateSchema = new Schema<IDebate>(

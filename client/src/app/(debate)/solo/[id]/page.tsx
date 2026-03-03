@@ -24,6 +24,9 @@ export default function SoloPracticeRoom() {
     const [socketError, setSocketError] = useState("");
     const [isBotThinking, setIsBotThinking] = useState(false);
     const [newMsgId, setNewMsgId] = useState<string | null>(null);
+    // User-selectable AI model for this session
+    const [preferredModel, setPreferredModel] = useState<"gemini" | "canned">("gemini");
+    const sessModelRef = useRef<"gemini" | "canned">("gemini");
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const chatRef = useRef<HTMLDivElement>(null);
@@ -42,7 +45,8 @@ export default function SoloPracticeRoom() {
     useEffect(() => {
         if (!accessToken || !debateId) return;
         const socket = getSocket(accessToken);
-        socket.emit("solo:join", { debateId });
+        // Pass preferredModel on join so the server knows it for the whole session
+        socket.emit("solo:join", { debateId, preferredModel: sessModelRef.current });
         socket.on("debate:updated", (d: IDebate) => {
             setDebate(d);
             setSocketError("");
@@ -154,7 +158,7 @@ export default function SoloPracticeRoom() {
                 backdropFilter: "blur(12px)",
                 display: "flex", flexDirection: "column", gap: "8px",
             }}>
-                {/* Row 1: Solo badge + topic */}
+                {/* Row 1: Solo badge + topic + model selector */}
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
                     <div style={{
                         display: "flex", alignItems: "center", gap: "6px",
@@ -166,15 +170,36 @@ export default function SoloPracticeRoom() {
                     }}>
                         <Bot size={11} /> Solo Practice
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px", flex: 1 }}>
                         <span style={{ fontSize: "0.72rem", color: "var(--primary)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px" }}>
                             Round {debate.round}/3
                         </span>
                         <ChevronRight size={12} style={{ color: "var(--text-muted)" }} />
-                        <h1 style={{ fontSize: "0.95rem", fontWeight: 700, margin: 0, color: "var(--text-primary)" }}>
+                        <h1 style={{ fontSize: "0.95rem", fontWeight: 700, margin: 0, color: "var(--text-primary)", flex: 1 }}>
                             {debate.topicId.title}
                         </h1>
                     </div>
+                    {/* ── MODEL SELECTOR TOGGLE ── */}
+                    {isOngoing && (
+                        <div style={{ display: "flex", alignItems: "center", gap: "2px", padding: "3px", borderRadius: "8px", background: "var(--bg-elevated)", border: "1px solid var(--border)", flexShrink: 0 }}>
+                            {(["gemini", "canned"] as const).map(m => (
+                                <button key={m} onClick={() => {
+                                    setPreferredModel(m);
+                                    sessModelRef.current = m;
+                                    // Immediately re-join with new model choice so server picks it up
+                                    if (accessToken) getSocket(accessToken).emit("solo:join", { debateId, preferredModel: m });
+                                }} style={{
+                                    padding: "3px 10px", borderRadius: "6px", border: "none",
+                                    fontSize: "0.68rem", fontWeight: 700, cursor: "pointer",
+                                    background: preferredModel === m ? (m === "gemini" ? "rgba(139,92,246,0.8)" : "rgba(100,116,139,0.5)") : "transparent",
+                                    color: preferredModel === m ? "white" : "var(--text-muted)",
+                                    transition: "all 0.15s ease",
+                                }}>
+                                    {m === "gemini" ? "✨ Gemini" : "📚 Canned"}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* Row 2: Player vs Bot with timer */}
@@ -361,22 +386,38 @@ export default function SoloPracticeRoom() {
                                         {msg.content}
                                     </div>
 
-                                    {/* AI Score pill */}
+                                    {/* AI Score + aiSource pills */}
                                     {msg.aiScore !== undefined && (
                                         <div style={{
                                             position: "absolute",
                                             bottom: 0,
                                             [isMine ? "left" : "right"]: "6px",
-                                            display: "flex", alignItems: "center", gap: "3px",
-                                            background: scoreColor!,
-                                            color: "white",
-                                            fontSize: "0.62rem", fontWeight: 900,
-                                            padding: "2px 7px", borderRadius: "100px",
-                                            boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
-                                            letterSpacing: "0.3px",
+                                            display: "flex", alignItems: "center", gap: "4px",
                                         }}>
-                                            <Star size={8} style={{ fill: "white", color: "white" }} />
-                                            {msg.aiScore}
+                                            <div style={{
+                                                display: "flex", alignItems: "center", gap: "3px",
+                                                background: scoreColor!,
+                                                color: "white",
+                                                fontSize: "0.62rem", fontWeight: 900,
+                                                padding: "2px 7px", borderRadius: "100px",
+                                                boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+                                            }}>
+                                                <Star size={8} style={{ fill: "white", color: "white" }} />
+                                                {msg.aiScore}
+                                            </div>
+                                            {/* aiSource indicator — only shows on bot messages */}
+                                            {!isMine && msg.aiSource && (
+                                                <div style={{
+                                                    fontSize: "0.6rem", fontWeight: 800,
+                                                    padding: "2px 6px", borderRadius: "100px",
+                                                    background: msg.aiSource === "gemini" ? "rgba(139,92,246,0.85)" : "rgba(100,116,139,0.7)",
+                                                    color: "white",
+                                                    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                                                    letterSpacing: "0.3px",
+                                                }}>
+                                                    {msg.aiSource === "gemini" ? "✨ Gemini" : "📚 Canned"}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>

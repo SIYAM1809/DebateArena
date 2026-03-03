@@ -28,17 +28,19 @@ const BOT_REPLY_DELAY_MS = 3500;
 
 export function registerSoloHandlers(io: Server, socket: Socket) {
     const userId = socket.data.user.userId;
+    // Default: Gemini. Can be overridden per-session by the client on solo:join.
+    let sessionModel: "gemini" | "canned" = "gemini";
 
     // ── 1. JOIN ──────────────────────────────────────────────────────────────
     // The client calls this immediately on page mount.
     // We join the socket room so subsequent emits reach this client.
-    socket.on("solo:join", async (payload: { debateId: string }) => {
+    socket.on("solo:join", async (payload: { debateId: string; preferredModel?: "gemini" | "canned" }) => {
         try {
-            const { debateId } = payload;
+            const { debateId, preferredModel } = payload;
+            if (preferredModel) sessionModel = preferredModel;
             socket.join(`debate_${debateId}`);
-            logger.info("User joined solo debate room", { userId, debateId });
+            logger.info("User joined solo debate room", { userId, debateId, model: sessionModel });
 
-            // Send the current debate state so the UI can render immediately
             const debate = await debateService.getDebateById(debateId);
             socket.emit("debate:updated", debate);
         } catch (error) {
@@ -71,7 +73,7 @@ export function registerSoloHandlers(io: Server, socket: Socket) {
             if (afterEndTurn.status === "ONGOING" && afterEndTurn.currentTurn === "AGAINST") {
                 setTimeout(async () => {
                     try {
-                        const afterBot = await submitBotTurn(debateId);
+                        const afterBot = await submitBotTurn(debateId, sessionModel);
                         io.to(`debate_${debateId}`).emit("debate:updated", afterBot);
                     } catch (botErr) {
                         logger.error("Bot turn failed", { error: (botErr as Error).message });
@@ -95,7 +97,7 @@ export function registerSoloHandlers(io: Server, socket: Socket) {
             if (afterEndTurn.status === "ONGOING" && afterEndTurn.currentTurn === "AGAINST") {
                 setTimeout(async () => {
                     try {
-                        const afterBot = await submitBotTurn(debateId);
+                        const afterBot = await submitBotTurn(debateId, sessionModel);
                         io.to(`debate_${debateId}`).emit("debate:updated", afterBot);
                     } catch (botErr) {
                         logger.error("Bot turn (after pass) failed", { error: (botErr as Error).message });
