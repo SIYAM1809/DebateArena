@@ -65,7 +65,7 @@ npm run test:coverage   # run with coverage report
 
 ## Deployment
 
-### Backend → Railway
+### Backend → Render
 
 1. Create a new Railway project and connect your GitHub repo.
 2. Set **Root Directory** to `server/`.
